@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// Params struct used for hashing
 type Params struct {
 	time       uint32
 	memory     uint32
