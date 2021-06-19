@@ -34,16 +34,20 @@ func GenerateHash(password string) (*Params, []byte, []byte, error) {
 	return params, salt, argon2.IDKey([]byte(password), salt, params.time, params.memory, params.threads, params.keyLength), nil
 }
 
-// GenerateHashBase64 returns a base64 encoded hash and an error
-func GenerateHashBase64(password string) (string, error) {
+func encodeHash(p *Params, salt, hash []byte) string {
+	saltBase64 := base64.RawStdEncoding.EncodeToString(salt)
+	hashBase64 := base64.RawStdEncoding.EncodeToString(hash)
+	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, p.memory, p.time, p.threads, saltBase64, hashBase64)
+}
+
+// GenerateEncodedHash returns a base64 encoded hash and an error
+func GenerateEncodedHash(password string) (string, error) {
 	p, salt, hash, err := GenerateHash(password)
 	if err != nil {
 		return "", err
 	}
-	saltBase64 := base64.RawStdEncoding.EncodeToString(salt)
-	hashBase64 := base64.RawStdEncoding.EncodeToString(hash)
-
-	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, p.memory, p.time, p.threads, saltBase64, hashBase64), nil
+	encoded := encodeHash(p, salt, hash)
+	return encoded, nil
 }
 
 // DecodeHash decodes the given encoded hash and returns params, salt, hash, err
